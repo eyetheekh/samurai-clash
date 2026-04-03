@@ -8,11 +8,12 @@ ctx.fillRect(0, 0, canvas.width, canvas.height);
 const GRAVITY = 0.13
 
 class Sprite {
-    constructor({ position, velocity, height, color }) {
+    constructor({ position, velocity, height, color, lastPressedkey = null }) {
         this.position = position;
         this.velocity = velocity;
         this.height = height;
         this.color = color;
+        this.lastPressedkey = lastPressedkey;
     }
 
     draw() {
@@ -53,7 +54,7 @@ const player = new Sprite({
 
 const enemy = new Sprite({
     position: {
-        x: 200,
+        x: 600,
         y: 0
     },
     velocity: {
@@ -61,7 +62,7 @@ const enemy = new Sprite({
         y: 0
     },
     height: 20,
-    color: "red"
+    color: "red",
 });
 
 const keyMap = {
@@ -77,8 +78,7 @@ const keyMap = {
         },
         d: {
             pressed: false
-        },
-        lastPressedkey: NaN
+        }
     },
     enemy: {
         ArrowUp: {
@@ -92,8 +92,7 @@ const keyMap = {
         },
         ArrowRight: {
             pressed: false
-        },
-        lastPressedkey: NaN
+        }
     }
 }
 
@@ -107,31 +106,31 @@ function animate() {
     enemy.update();
 
     player.velocity.x = 0;
-    if (keyMap.player.w.pressed && keyMap.player.lastPressedkey === "w") {
+    if (keyMap.player.w.pressed && player.lastPressedkey === "w") {
         player.velocity.y -= 1;
 
-    } else if (keyMap.player.s.pressed && keyMap.player.lastPressedkey === "s") {
+    } else if (keyMap.player.s.pressed && player.lastPressedkey === "s") {
         player.velocity.y += 1;
 
-    } else if (keyMap.player.a.pressed && keyMap.player.lastPressedkey === "a") {
+    } else if (keyMap.player.a.pressed && player.lastPressedkey === "a") {
         player.velocity.x -= 5;
 
-    } else if (keyMap.player.d.pressed && keyMap.player.lastPressedkey === "d") {
+    } else if (keyMap.player.d.pressed && player.lastPressedkey === "d") {
         player.velocity.x += 5;
 
     }
 
     enemy.velocity.x = 0;
-    if (keyMap.enemy.ArrowUp.pressed && keyMap.enemy.lastPressedkey === "ArrowUp") {
+    if (keyMap.enemy.ArrowUp.pressed && enemy.lastPressedkey === "ArrowUp") {
         enemy.velocity.y -= 1;
 
-    } else if (keyMap.enemy.ArrowDown.pressed && keyMap.enemy.lastPressedkey === "ArrowDown") {
+    } else if (keyMap.enemy.ArrowDown.pressed && enemy.lastPressedkey === "ArrowDown") {
         enemy.velocity.y += 1;
 
-    } else if (keyMap.enemy.ArrowLeft.pressed && keyMap.enemy.lastPressedkey === "ArrowLeft") {
+    } else if (keyMap.enemy.ArrowLeft.pressed && enemy.lastPressedkey === "ArrowLeft") {
         enemy.velocity.x -= 5;
 
-    } else if (keyMap.enemy.ArrowRight.pressed && keyMap.enemy.lastPressedkey === "ArrowRight") {
+    } else if (keyMap.enemy.ArrowRight.pressed && enemy.lastPressedkey === "ArrowRight") {
         enemy.velocity.x += 5;
 
     }
@@ -143,38 +142,38 @@ window.addEventListener("keydown", (e) => {
     // player
     if (e.key === "w") {
         keyMap.player.w.pressed = true;
-        keyMap.player.lastPressedkey = "w";
+        player.lastPressedkey = "w";
 
     } else if (e.key === "s") {
         keyMap.player.s.pressed = true;
-        keyMap.player.lastPressedkey = "s";
+        player.lastPressedkey = "s";
 
     } else if (e.key === "a") {
         keyMap.player.a.pressed = true;
-        keyMap.player.lastPressedkey = "a";
+        player.lastPressedkey = "a";
 
     } else if (e.key === "d") {
         keyMap.player.d.pressed = true;
-        keyMap.player.lastPressedkey = "d";
+        player.lastPressedkey = "d";
 
     };
 
     // enemy
     if (e.key === "ArrowUp") {
         keyMap.enemy.ArrowUp.pressed = true;
-        keyMap.enemy.lastPressedkey = "ArrowUp";
+        enemy.lastPressedkey = "ArrowUp";
 
     } else if (e.key === "ArrowDown") {
         keyMap.enemy.ArrowDown.pressed = true;
-        keyMap.enemy.lastPressedkey = "ArrowDown";
+        enemy.lastPressedkey = "ArrowDown";
 
     } else if (e.key === "ArrowLeft") {
         keyMap.enemy.ArrowLeft.pressed = true;
-        keyMap.enemy.lastPressedkey = "ArrowLeft";
+        enemy.lastPressedkey = "ArrowLeft";
 
     } else if (e.key === "ArrowRight") {
         keyMap.enemy.ArrowRight.pressed = true;
-        keyMap.enemy.lastPressedkey = "ArrowRight";
+        enemy.lastPressedkey = "ArrowRight";
 
     };
 
