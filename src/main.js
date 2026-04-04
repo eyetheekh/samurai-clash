@@ -33,6 +33,17 @@ class Sprite {
             this.width,
             this.height
         );
+        
+        // draw attack box when attacking is true
+        if (this.isAttacking) {
+            ctx.fillStyle = this.attackBox.color;
+            ctx.fillRect(
+                this.attackBox.x,
+                this.attackBox.y,
+                this.attackBox.width,
+                this.attackBox.height
+            );
+        }
     };
 
     update() {
@@ -86,16 +97,9 @@ class Sprite {
         }
         else {
             this.isAttacking = true;
-            ctx.fillStyle = this.attackBox.color;
-            ctx.fillRect(
-                this.attackBox.x,
-                this.attackBox.y,
-                this.attackBox.width,
-                this.attackBox.height
-            );
             setTimeout(() => {
                 this.isAttacking = !this.isAttacking;
-            }, 350);
+            }, 250);
         }
     };
 
