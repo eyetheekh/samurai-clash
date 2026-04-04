@@ -8,13 +8,21 @@ ctx.fillRect(0, 0, canvas.width, canvas.height);
 const GRAVITY = 0.6;
 
 class Sprite {
-    constructor({ position, velocity, width, height, color, lastPressedkey = null }) {
+    constructor({ position, velocity, width, height, color, attackColor, attackWidth, attackHeight }) {
         this.position = position;
         this.velocity = velocity;
         this.width = width;
         this.height = height;
         this.color = color;
-        this.lastPressedkey = lastPressedkey;
+        this.lastPressedkey = null;
+        this.isAttacking = false;
+        this.attackBox = {
+            color: attackColor,
+            width: attackWidth,
+            height: attackHeight,
+            x: this.position.x,
+            y: this.position.y - 10,
+        }
     }
 
     draw() {
@@ -33,6 +41,11 @@ class Sprite {
         // actual movement of the sprite
         this.position.x += this.velocity.x;
         this.position.y += this.velocity.y;
+
+        // this.attackBox values are populated onlu once at object creation and are not updated dynamically;
+        // manually update the attackBox x,y with that of the charector
+        this.attackBox.x = this.position.x;
+        this.attackBox.y = this.position.y;
 
         // update y velocity for gravity to keep increasing until hit canvas bottom
         if (this.position.y + this.height >= canvas.height) {
@@ -60,7 +73,32 @@ class Sprite {
     isOnGround() {
         // returns a boolen if charector is touching the ground (canvas bottom)
         return this.position.y + this.height === canvas.height
-    }
+    };
+
+    attack() {
+        /* 
+        attack based on boolean: isAttacking
+        checks if isAttacking is true & immediately returns
+        else set attacking to true and a settimeout to negate back to false
+        */
+        if (this.isAttacking) {
+            return;
+        }
+        else {
+            this.isAttacking = true;
+            ctx.fillStyle = this.attackBox.color;
+            ctx.fillRect(
+                this.attackBox.x,
+                this.attackBox.y,
+                this.attackBox.width,
+                this.attackBox.height
+            );
+            setTimeout(() => {
+                this.isAttacking = !this.isAttacking;
+            }, 350);
+        }
+    };
+
 
 };
 
@@ -75,7 +113,10 @@ const player = new Sprite({
     },
     width: 20,
     height: 20,
-    color: "blue"
+    color: "blue",
+    attackColor: "green",
+    attackWidth: 40,
+    attackHeight: 10,
 });
 
 const enemy = new Sprite({
@@ -90,6 +131,9 @@ const enemy = new Sprite({
     width: 20,
     height: 20,
     color: "red",
+    attackColor: "yellow",
+    attackWidth: 40,
+    attackHeight: 10,
 });
 
 const keyMap = {
@@ -105,6 +149,9 @@ const keyMap = {
         },
         d: {
             pressed: false
+        },
+        space: {
+            pressed: false
         }
     },
     enemy: {
@@ -118,6 +165,9 @@ const keyMap = {
             pressed: false
         },
         ArrowRight: {
+            pressed: false
+        },
+        Control: {
             pressed: false
         }
     }
@@ -147,12 +197,15 @@ function animate() {
     } else if (keyMap.player.d.pressed && player.lastPressedkey === "d") {
         player.velocity.x += 5;
 
+    } else if (keyMap.player.space.pressed && player.lastPressedkey === " ") {
+        player.attack();
+
     };
-    
+
     ///////////////////////////////////////////////////// ENEMY
     // reset enemy's x velocity for each frame
     enemy.velocity.x = 0;
-    
+
     // calculate enemy movement based on keyinput & update velocity for each frame
     if (keyMap.enemy.ArrowUp.pressed && enemy.lastPressedkey === "ArrowUp") {
         if (enemy.isOnGround()) enemy.velocity.y -= 12;
@@ -165,6 +218,9 @@ function animate() {
 
     } else if (keyMap.enemy.ArrowRight.pressed && enemy.lastPressedkey === "ArrowRight") {
         enemy.velocity.x += 5;
+
+    } else if (keyMap.enemy.Control.pressed && enemy.lastPressedkey === "Control") {
+        enemy.attack();
 
     };
 
@@ -192,7 +248,9 @@ window.addEventListener("keydown", (e) => {
     } else if (e.key === "d") {
         keyMap.player.d.pressed = true;
         player.lastPressedkey = "d";
-
+    } else if (e.key === " ") {
+        keyMap.player.space.pressed = true;
+        player.lastPressedkey = " ";
     };
 
     // enemy
@@ -212,6 +270,9 @@ window.addEventListener("keydown", (e) => {
         keyMap.enemy.ArrowRight.pressed = true;
         enemy.lastPressedkey = "ArrowRight";
 
+    } else if (e.key === "Control") {
+        keyMap.enemy.Control.pressed = true;
+        enemy.lastPressedkey = "Control";
     };
 
 });
@@ -230,6 +291,9 @@ window.addEventListener("keyup", (e) => {
     }
     else if (e.key === "d") {
         keyMap.player.d.pressed = false;
+    }
+    else if (e.key === " ") {
+        keyMap.player.space.pressed = false;
     };
 
     // enemy
@@ -244,6 +308,9 @@ window.addEventListener("keyup", (e) => {
 
     } else if (e.key === "ArrowRight") {
         keyMap.enemy.ArrowRight.pressed = false;
+
+    } else if (e.key === "Control") {
+        keyMap.enemy.Control.pressed = false;
 
     };
 
