@@ -8,7 +8,7 @@ ctx.fillRect(0, 0, canvas.width, canvas.height);
 const GRAVITY = 0.6;
 
 class Sprite {
-    constructor({ position, velocity, width, height, color, attackColor, attackWidth, attackHeight }) {
+    constructor({ position, velocity, width, height, color, attackColor, attackWidth, attackHeight, attackOffsetX, attackOffsetY }) {
         this.position = position;
         this.velocity = velocity;
         this.width = width;
@@ -21,7 +21,9 @@ class Sprite {
             width: attackWidth,
             height: attackHeight,
             x: this.position.x,
-            y: this.position.y - 10,
+            y: this.position.y,
+            x_offset: attackOffsetX,
+            y_offset: attackOffsetY,
         }
     }
 
@@ -33,7 +35,7 @@ class Sprite {
             this.width,
             this.height
         );
-        
+
         // draw attack box when attacking is true
         if (this.isAttacking) {
             ctx.fillStyle = this.attackBox.color;
@@ -55,8 +57,9 @@ class Sprite {
 
         // this.attackBox values are populated onlu once at object creation and are not updated dynamically;
         // manually update the attackBox x,y with that of the charector
-        this.attackBox.x = this.position.x;
-        this.attackBox.y = this.position.y;
+        // offest the attackbox for right side charector
+        this.attackBox.x = this.position.x + this.attackBox.x_offset;
+        this.attackBox.y = this.position.y + this.attackBox.y_offset;
 
         // update y velocity for gravity to keep increasing until hit canvas bottom
         if (this.position.y + this.height >= canvas.height) {
@@ -98,7 +101,7 @@ class Sprite {
         else {
             this.isAttacking = true;
             setTimeout(() => {
-                this.isAttacking = !this.isAttacking;
+                this.isAttacking = false;
             }, 250);
         }
     };
@@ -121,6 +124,8 @@ const player = new Sprite({
     attackColor: "green",
     attackWidth: 40,
     attackHeight: 10,
+    attackOffsetX: 0,
+    attackOffsetY: 0
 });
 
 const enemy = new Sprite({
@@ -138,6 +143,8 @@ const enemy = new Sprite({
     attackColor: "yellow",
     attackWidth: 40,
     attackHeight: 10,
+    attackOffsetX: -20,
+    attackOffsetY: 0
 });
 
 const keyMap = {
@@ -175,8 +182,20 @@ const keyMap = {
             pressed: false
         }
     }
-}
+};
 
+function detectCollision(
+    player1,
+    player2,
+) {
+    // compare the players attackboxxes and checks for overlapping between them
+    return (
+        player1.attackBox.x + player1.attackBox.width >= player2.position.x &&
+        player1.attackBox.x <= player2.position.x + player2.width &&
+        player1.attackBox.y + player1.attackBox.height >= player2.position.y &&
+        player1.attackBox.y <= player2.position.y + player2.height
+    );
+};
 
 function animate() {
     window.requestAnimationFrame(animate);
@@ -201,9 +220,6 @@ function animate() {
     } else if (keyMap.player.d.pressed && player.lastPressedkey === "d") {
         player.velocity.x += 5;
 
-    } else if (keyMap.player.space.pressed && player.lastPressedkey === " ") {
-        player.attack();
-
     };
 
     ///////////////////////////////////////////////////// ENEMY
@@ -223,9 +239,19 @@ function animate() {
     } else if (keyMap.enemy.ArrowRight.pressed && enemy.lastPressedkey === "ArrowRight") {
         enemy.velocity.x += 5;
 
-    } else if (keyMap.enemy.Control.pressed && enemy.lastPressedkey === "Control") {
-        enemy.attack();
+    };
 
+    //////////////////////////////////////////////////// check for collisions
+    // player hits enemy
+    if (player.isAttacking && detectCollision(player, enemy)) {
+        console.log("player hit enemy");
+        // player.isAttacking = false;
+    };
+
+    // enemy hits player 
+    if (enemy.isAttacking && detectCollision(enemy, player)) {
+        console.log("enemy hit player");
+        // enemy.isAttacking = false;
     };
 
     // update the position of the charectors 
@@ -253,6 +279,16 @@ window.addEventListener("keydown", (e) => {
         keyMap.player.d.pressed = true;
         player.lastPressedkey = "d";
     } else if (e.key === " ") {
+        /*  
+        browser handles spacekey as one of controlkeys and fires repeated keydown events,
+        which causes repeated keydown events if pressed & hold.
+        */
+
+        // check if the key is pressed, then only attack
+        // forces a keyup (resets to false) to attack again
+        if (!keyMap.player.space.pressed) {
+            player.attack();
+        }
         keyMap.player.space.pressed = true;
         player.lastPressedkey = " ";
     };
@@ -277,6 +313,7 @@ window.addEventListener("keydown", (e) => {
     } else if (e.key === "Control") {
         keyMap.enemy.Control.pressed = true;
         enemy.lastPressedkey = "Control";
+        enemy.attack()
     };
 
 });
