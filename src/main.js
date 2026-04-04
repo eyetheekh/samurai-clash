@@ -6,6 +6,10 @@ canvas.height = 576;
 ctx.fillRect(0, 0, canvas.width, canvas.height);
 
 const GRAVITY = 0.6;
+const FLOOR_LEVEL = 56;
+
+const background = new Image();
+background.src = 'assets/background/background.jpeg';
 
 class Sprite {
     constructor({ position, velocity, width, height, color, attackColor, attackWidth, attackHeight, attackOffsetX, attackOffsetY }) {
@@ -62,7 +66,7 @@ class Sprite {
         this.attackBox.y = this.position.y + this.attackBox.y_offset;
 
         // update y velocity for gravity to keep increasing until hit canvas bottom
-        if (this.position.y + this.height >= canvas.height) {
+        if (this.position.y + this.height >= canvas.height - FLOOR_LEVEL) {
             this.velocity.y = 0;
         } else { this.velocity.y += GRAVITY };
 
@@ -78,15 +82,15 @@ class Sprite {
         if (this.position.y < 0) {
             this.position.y = 0;
         };
-        if (this.position.y + this.height > canvas.height) {
-            this.position.y = canvas.height - this.height;
-        }
+        if (this.position.y + this.height > canvas.height- FLOOR_LEVEL) {
+            this.position.y = canvas.height - this.height - FLOOR_LEVEL;
+        };
 
     };
 
     isOnGround() {
         // returns a boolen if charector is touching the ground (canvas bottom)
-        return this.position.y + this.height === canvas.height
+        return this.position.y + this.height === canvas.height - FLOOR_LEVEL
     };
 
     attack() {
@@ -202,6 +206,9 @@ function animate() {
     // completely wipe the canvas 
     ctx.fillStyle = "black"
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // background image
+    ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
 
     ///////////////////////////////////////////////////// PLAYER
     // reset player's x velocity for each frame
