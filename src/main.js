@@ -10,20 +10,50 @@ const FLOOR_LEVEL = 56;
 
 
 class Sprite {
-    constructor({ position, width, height, imageSrc }) {
+    constructor({ position, width, height, scale = 1, imageSrc, framesTotal }) {
         this.position = position;
+        this.scale = scale;
         this.width = width;
         this.height = height;
         this.image = new Image();
         this.image.src = imageSrc;
+        this.frameTotal = framesTotal; // total no.of frames in actual sprite img
+        this.frameCurrent = 0;
+        this.frameCompleted = 0; // total frames elapsed in game
+        this.frameSkip = 10; // control swith to next frame
     };
 
     draw() {
-        ctx.drawImage(this.image, this.position.x, this.position.y, canvas.width, canvas.height)
-    };
+        if (this.frameTotal === 1) { // static images (background)
+            ctx.drawImage(
+                this.image,
+                this.position.x,
+                this.position.y,
+                this.width,
+                this.height
+            );
+        } else { // animate sprites
+            ctx.drawImage(
+                this.image,
+                this.frameCurrent * (this.image.width / this.frameTotal), // sx
+                0,                                                        // sy
+                this.image.width / this.frameTotal,                       // sWidth
+                this.image.height,                                        // sHeight
+                this.position.x,                                          // dx
+                this.position.y,                                          // dy
+                (this.image.width / this.frameTotal) * this.scale,        // dWidth
+                this.image.height * this.scale                            // dHeight
+            );
+        }
+    }
 
     update() {
         this.draw();
+        this.frameCompleted++; // update total frames elapsed in game
+
+        if (this.frameCurrent < this.frameTotal - 1) {
+            if (this.frameCompleted % this.frameSkip === 0) this.frameCurrent++; // update current frame based on frameSkip
+        } else this.frameCurrent = 0;
     };
 
 };
@@ -135,7 +165,22 @@ const background = new Sprite({
         x: 0,
         y: 0
     },
+    framesTotal: 1,
+    width: canvas.width,
+    height: canvas.height,
     imageSrc: 'assets/background/background.jpeg'
+});
+
+const backgroundShop = new Sprite({
+    position: {
+        x: 120,
+        y: 300
+    },
+    width: 350,
+    height: 125,
+    scale: 1.75,
+    imageSrc: 'assets/background/shop.png',
+    framesTotal: 6,
 });
 
 const player = new Warrior({
@@ -234,6 +279,7 @@ function animate() {
 
     // background image
     background.update();
+    backgroundShop.update();
 
     ///////////////////////////////////////////////////// PLAYER
     // reset player's x velocity for each frame
