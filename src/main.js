@@ -8,10 +8,27 @@ ctx.fillRect(0, 0, canvas.width, canvas.height);
 const GRAVITY = 0.6;
 const FLOOR_LEVEL = 56;
 
-const background = new Image();
-background.src = 'assets/background/background.jpeg';
 
 class Sprite {
+    constructor({ position, width, height, imageSrc }) {
+        this.position = position;
+        this.width = width;
+        this.height = height;
+        this.image = new Image();
+        this.image.src = imageSrc;
+    };
+
+    draw() {
+        ctx.drawImage(this.image, this.position.x, this.position.y, canvas.width, canvas.height)
+    };
+
+    update() {
+        this.draw();
+    };
+
+};
+
+class Warrior {
     constructor({ position, velocity, width, height, color, attackColor, attackWidth, attackHeight, attackOffsetX, attackOffsetY }) {
         this.position = position;
         this.velocity = velocity;
@@ -82,7 +99,7 @@ class Sprite {
         if (this.position.y < 0) {
             this.position.y = 0;
         };
-        if (this.position.y + this.height > canvas.height- FLOOR_LEVEL) {
+        if (this.position.y + this.height > canvas.height - FLOOR_LEVEL) {
             this.position.y = canvas.height - this.height - FLOOR_LEVEL;
         };
 
@@ -113,7 +130,15 @@ class Sprite {
 
 };
 
-const player = new Sprite({
+const background = new Sprite({
+    position: {
+        x: 0,
+        y: 0
+    },
+    imageSrc: 'assets/background/background.jpeg'
+});
+
+const player = new Warrior({
     position: {
         x: 10,
         y: 0
@@ -132,7 +157,7 @@ const player = new Sprite({
     attackOffsetY: 0
 });
 
-const enemy = new Sprite({
+const enemy = new Warrior({
     position: {
         x: 600,
         y: 0
@@ -208,7 +233,7 @@ function animate() {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     // background image
-    ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
+    background.update();
 
     ///////////////////////////////////////////////////// PLAYER
     // reset player's x velocity for each frame
