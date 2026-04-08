@@ -6,7 +6,7 @@ canvas.height = 576;
 ctx.fillRect(0, 0, canvas.width, canvas.height);
 
 const GRAVITY = 0.6;
-const FLOOR_LEVEL = 56;
+const FLOOR_LEVEL = 60;
 
 
 class Sprite {
@@ -44,26 +44,69 @@ class Sprite {
                 (this.image.width / this.frameTotal) * this.scale,        // dWidth
                 this.image.height * this.scale                            // dHeight
             );
-        }
-    }
-
-    update() {
-        this.draw();
+        };
         this.frameCompleted++; // update total frames elapsed in game
 
         if (this.frameCurrent < this.frameTotal - 1) {
             if (this.frameCompleted % this.frameSkip === 0) this.frameCurrent++; // update current frame based on frameSkip
         } else this.frameCurrent = 0;
+
+        // debug border
+        ctx.strokeStyle = "red";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(
+            this.position.x,
+            this.position.y,
+            this.width,
+            this.height
+        );
+        
+        // debug attackbox border
+        if (this.attackBox) {
+            ctx.strokeStyle = this.attackBox.color;
+            ctx.strokeRect(
+                this.attackBox.x,
+                this.attackBox.y,
+                this.attackBox.width,
+                this.attackBox.height,
+            );
+        };
+
+    };
+
+    update() {
+        this.draw();
     };
 
 };
 
-class Warrior {
-    constructor({ position, velocity, width, height, color, attackColor, attackWidth, attackHeight, attackOffsetX, attackOffsetY }) {
-        this.position = position;
+class Warrior extends Sprite {
+    constructor({
+        position,
+        velocity,
+        width,
+        height,
+        color,
+        attackColor,
+        attackWidth,
+        attackHeight,
+        attackOffsetX,
+        attackOffsetY,
+        scale = 1,
+        imageSrc,
+        framesTotal
+    }) {
+
+        super({
+            position,
+            width,
+            height,
+            scale,
+            imageSrc,
+            framesTotal
+        });
+
         this.velocity = velocity;
-        this.width = width;
-        this.height = height;
         this.color = color;
         this.lastPressedkey = null;
         this.isAttacking = false;
@@ -77,27 +120,6 @@ class Warrior {
             y_offset: attackOffsetY,
         }
     }
-
-    draw() {
-        ctx.fillStyle = this.color;
-        ctx.fillRect(
-            this.position.x,
-            this.position.y,
-            this.width,
-            this.height
-        );
-
-        // draw attack box when attacking is true
-        if (this.isAttacking) {
-            ctx.fillStyle = this.attackBox.color;
-            ctx.fillRect(
-                this.attackBox.x,
-                this.attackBox.y,
-                this.attackBox.width,
-                this.attackBox.height
-            );
-        }
-    };
 
     update() {
         this.draw();
@@ -174,10 +196,10 @@ const background = new Sprite({
 const backgroundShop = new Sprite({
     position: {
         x: 120,
-        y: 300
+        y: canvas.height - FLOOR_LEVEL - 225 // 225 = height of shop
     },
-    width: 350,
-    height: 125,
+    width: 225,
+    height: 225,
     scale: 1.75,
     imageSrc: 'assets/background/shop.png',
     framesTotal: 6,
@@ -192,14 +214,17 @@ const player = new Warrior({
         x: 0,
         y: 0
     },
-    width: 20,
-    height: 20,
+    width: 140,
+    height: 140,
     color: "blue",
     attackColor: "green",
-    attackWidth: 40,
-    attackHeight: 10,
-    attackOffsetX: 0,
-    attackOffsetY: 0
+    attackWidth: 120,
+    attackHeight: 80,
+    attackOffsetX: 70,
+    attackOffsetY: 40,
+    imageSrc: "assets/charectors/sprites/guts/idle.png",
+    scale: 0.7,
+    framesTotal: 7
 });
 
 const enemy = new Warrior({
@@ -211,14 +236,17 @@ const enemy = new Warrior({
         x: 0,
         y: 0
     },
-    width: 20,
-    height: 20,
+    width: 210,
+    height: 210,
     color: "red",
     attackColor: "yellow",
-    attackWidth: 40,
-    attackHeight: 10,
-    attackOffsetX: -20,
-    attackOffsetY: 0
+    attackWidth: 160,
+    attackHeight: 140,
+    attackOffsetX: -60,
+    attackOffsetY: 50,
+    imageSrc: "assets/charectors/sprites/zodd/idle.png",
+    scale: 0.75,
+    framesTotal: 6
 });
 
 const keyMap = {
